@@ -14,3 +14,37 @@ pip install .
 ```
 
 ### some bug fix
+
+## usage
+
+### file tree
+/your/working/dir
+|--yourinputfile.pdb
+|--leap.in
+|--memb_mstools.py
+|--run.sh
+|--vmd_box_dims.sh
+
+As an example of `run.sh`
+```
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH -n 1
+#SBATCH -c 28
+#SBATCH --gpus=1
+#SBATCH --qos=normal
+#SBATCH --job-name mstool
+
+# run
+source ~/miniconda3/bin/activate mstools
+
+rm -r workdir
+export OPENMM_PLUGIN_DIR=""
+python3 memb_mstools_amber.py
+
+cd workdir
+charmmlipid2amber.py -i step7_final.pdb -o step7_final_amber.pdb
+cp ../leap.in .
+../vmd_box_dims.sh -i step7_final_amber.pdb -s water
+```
+
