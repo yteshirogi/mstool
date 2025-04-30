@@ -18,12 +18,14 @@ pip install .
 ## usage
 
 ### file tree
+```
 /your/working/dir
 |--yourinputfile.pdb
 |--leap.in
 |--memb_mstools.py
 |--run.sh
 |--vmd_box_dims.sh
+```
 
 As an example of `run.sh`
 ```
