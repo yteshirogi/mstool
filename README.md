@@ -11,6 +11,9 @@
 git clone https://github.com/yteshirogi/mstool.git
 cd mstool
 pip install .
+
+dir=$(pip show mstool | grep Location | awk '{print $2}')
+echo "mstoolpath=$dir/mstool" >> yourshellconfig
 ```
 
 ### some bug fix
