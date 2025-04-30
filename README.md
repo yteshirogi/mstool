@@ -8,7 +8,9 @@
 ### Installation
 
 ```
-git clone git@github.com:ksy141/mstool.git
+git clone https://github.com/yteshirogi/mstool.git
 cd mstool
 pip install .
 ```
+
+### some bug fix
