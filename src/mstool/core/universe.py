@@ -66,10 +66,8 @@ class Universe:
         '''
         
         ### INITIAL VALUES
-        # self.cell       = [[1,0,0], [0,1,0], [0,0,1]] #triclinic_vectors
-        # self.dimensions = [1, 1, 1, 90, 90, 90]       #triclinic_box
-        self.cell       = None
-        self.dimensions = None
+        self.cell       = [[1,0,0], [0,1,0], [0,0,1]] #triclinic_vectors
+        self.dimensions = [0, 0, 0, 90, 90, 90]       #triclinic_box
         self.bonds = []
         self.cols  = {'anum': -1, 'name': 'tbd', 'charge': 0.0, 'mass': 0.0,
                       'type': 'tbd', 'nbtype': 0, 'resname': 'tbd', 'resid': 0, 
@@ -225,16 +223,16 @@ class Universe:
         u.cell = self.cell
         return u
 
-    def write(self, ofile, wrap=False, box=True):
+    def write(self, ofile, wrap=False):
         if wrap: self.wrapMolecules()
 
         ext = ofile.split('.')[-1]
         if ext == 'pdb' or ext == 'PDB':
-            self.writePDB(ofile, box=box)
+            self.writePDB(ofile)
         elif ext == 'dms' or ext == 'DMS':
-            self.writeDMS(ofile, box=box)
+            self.writeDMS(ofile)
         elif ext == 'gro' or ext == 'GRO':
-            self.writeGRO(ofile, box=box)
+            self.writeGRO(ofile)
         else:
             print('the file format should be either pdb or dms')
 
@@ -294,7 +292,7 @@ class Universe:
         
         self.construct_from_dict(data)
 
-    def writePDB(self, ofile, box=True, spacegroup='P 1', zvalue=1):
+    def writePDB(self, ofile, spacegroup='P 1', zvalue=1):
         #fmt is copied from MDAnalysis
 
         fmt = {
@@ -309,13 +307,9 @@ class Universe:
         }
  
         with open(ofile, 'w') as W:
-            if box:
-                try:
-                    W.write(fmt['CRYST1'].format(
-                        *self.dimensions,
-                        spacegroup, zvalue))
-                except:
-                    pass
+            W.write(fmt['CRYST1'].format(
+                *self.dimensions,
+                spacegroup, zvalue))
             
             i = 1
             for index, atom in self.atoms.iterrows():
@@ -382,7 +376,7 @@ class Universe:
             print(f"""WARNING: n_atoms is not consistent: {n_atoms} and {len(data['x'])}""")
         self.construct_from_dict(data)
 
-    def writeGRO(self, ofile, box=True):
+    def writeGRO(self, ofile):
         with open(ofile, 'w') as W:
             # n_atoms (the note field should not be empty; otherwise VMD does not like it)
             W.write("   \n{0:5d}\n".format(len(self.atoms)))
@@ -401,15 +395,11 @@ class Universe:
                 i += 1
 
             # cell
-            if box:
-                try:
-                    b = np.array(self.cell).flatten() * 0.1
-                    if b[1] == 0 and b[2] == 0 and b[5] == 0:
-                        W.write(f"{b[0]:10.5f} {b[4]:9.5f} {b[8]:9.5f}\n")
-                    else:
-                        W.write(f"{b[0]:10.5f} {b[4]:9.5f} {b[8]:9.5f} {b[1]:9.5f} {b[2]:9.5f} {b[3]:9.5f} {b[5]:9.5f} {b[6]:9.5f} {b[7]:9.5f}\n")
-                except:
-                    pass
+            b = np.array(self.cell).flatten() * 0.1
+            if b[1] == 0 and b[2] == 0 and b[5] == 0:
+                W.write(f"{b[0]:10.5f} {b[4]:9.5f} {b[8]:9.5f}\n")
+            else:
+                W.write(f"{b[0]:10.5f} {b[4]:9.5f} {b[8]:9.5f} {b[1]:9.5f} {b[2]:9.5f} {b[3]:9.5f} {b[5]:9.5f} {b[6]:9.5f} {b[7]:9.5f}\n")
  
 
     def readDMS(self, ifile):
@@ -424,23 +414,20 @@ class Universe:
         except:
             pass
 
-        try:
-            self.cell = np.zeros((3, 3))
+        try:        
             for i, (x, y, z) in enumerate(conn.execute('SELECT x, y, z FROM global_cell')):
                 self.cell[i][0] = x
                 self.cell[i][1] = y
                 self.cell[i][2] = z
-            self.dimensions = triclinic_box(self.cell[0], self.cell[1], self.cell[2])
 
+            self.dimensions = triclinic_box(self.cell[0], self.cell[1], self.cell[2])
         except:
-            self.cell = None
-            self.dimensions = None
             pass
 
         conn.close()
 
 
-    def writeDMS(self, ofile, box=True):
+    def writeDMS(self, ofile):
         if os.path.exists(ofile): os.remove(ofile)
         conn   = sqlite3.connect(ofile)
         cursor = conn.cursor()
@@ -451,16 +438,9 @@ class Universe:
         #     cursor.execute(line.strip())
 
         ### CELLS
-        if box:
-            try:
-                cursor.execute(sql_insert_cell.format(1,*self.cell[0]))
-                cursor.execute(sql_insert_cell.format(2,*self.cell[1]))
-                cursor.execute(sql_insert_cell.format(3,*self.cell[2]))
-            except:
-                cursor.execute(sql_insert_cell.format(1,1.0,0.0,0.0))
-                cursor.execute(sql_insert_cell.format(2,0.0,1.0,0.0))
-                cursor.execute(sql_insert_cell.format(3,0.0,0.0,1.0))
-                pass
+        cursor.execute(sql_insert_cell.format(1,*self.cell[0]))
+        cursor.execute(sql_insert_cell.format(2,*self.cell[1]))
+        cursor.execute(sql_insert_cell.format(3,*self.cell[2]))
         
         ### PARTICLES        
         msys_ct = 0
@@ -751,12 +731,7 @@ class Universe:
         # remove ['PREVIOUS', 0]
         counts.pop(0)
 
-        stdout = ''
-        if martini:
-            for ifile in martini.ifiles:
-                stdout += f'#include "{ifile}"\n'
-
-        stdout += '; \n'
+        stdout  = '; \n'
         stdout += '; topol.top made by mstool\n'
         stdout += '; You should modify this file based on the below '
         stdout += 'because it counts only correctly for '
@@ -765,6 +740,10 @@ class Universe:
         stdout += '; You need to run martinize.py anyway to parameterize your protein. \n'
         stdout += '; \n\n'
         
+        if martini:
+            for ifile in martini.ifiles:
+                stdout += f'#include "{ifile}"\n'
+
         stdout += '\n[ system ]\nMartini\n\n[ molecules ]\n'
         for count in counts:
             stdout += '{:10s} {:10d}\n'.format(count[0], count[1])
