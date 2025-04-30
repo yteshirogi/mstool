@@ -92,7 +92,7 @@ class ReadMartini:
         ff = [], ff_add = [], 
         define = {}, Kc2b = 10000.0,
         constraint_to_bond=False,
-        addnbtype=[], martini3=False):
+        addnbtype=[]):
 
         self.Kc2b = Kc2b
         self.ctb  = constraint_to_bond
@@ -100,25 +100,12 @@ class ReadMartini:
         if not isinstance(ff_add, list): ff_add = [ff_add]
 
         if ff == []:
-            if martini3:
-                ff = [pwd + '/../FF/martini3.0.0/martini_v3.0.0.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_ions_v1.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_nucleobases_v1.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_phospholipids_v1.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_phospholipids_v1_matthieu.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_small_molecules_v1.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_solvents_v1.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0.0_sugars_v1.itp',
-                      pwd + '/../FF/martini3.0.0/martini_v3.0_sterols_v1.0.itp']
-
-            else:
-                ff = [pwd + '/../FF/martini2.2/martini_v2.2.modified.itp',
-                      pwd + '/../FF/martini2.2/martini_v2.0_ions.itp',
-                      pwd + '/../FF/martini2.2/martini_v2.2_proteins/proteins.itp',
-                      pwd + '/../FF/martini2.2/martini_v2.2_proteins/proteins_HIS.itp',
-                      pwd + '/../FF/martini2.2/martini_v2.0_lipids_all_201506.itp',
-                      pwd + '/../FF/martini2.2/martini_lipids_add.itp',
-                      pwd + '/../FF/martini2.2/structures/*.itp']
+            ff = [pwd + '/../FF/martini2.2/martini_v2.2.modified.itp',
+                  pwd + '/../FF/martini2.2/martini_v2.0_ions.itp',
+                  pwd + '/../FF/martini2.2/martini_v2.2_aminoacids.itp',
+                  pwd + '/../FF/martini2.2/martini_v2.0_lipids_all_201506.itp',
+                  pwd + '/../FF/martini2.2/martini_lipids_add.itp',
+                  pwd + '/../FF/martini2.2/structures/*.itp']
 
         self.ifiles = []
         for ifile in [*ff, *ff_add]:
