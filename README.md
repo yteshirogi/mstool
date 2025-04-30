@@ -42,7 +42,7 @@ source ~/miniconda3/bin/activate mstools
 
 rm -r workdir
 export OPENMM_PLUGIN_DIR=""
-python3 memb_mstools_amber.py
+python3 memb_mstools.py
 
 cd workdir
 charmmlipid2amber.py -i step7_final.pdb -o step7_final_amber.pdb
