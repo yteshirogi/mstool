@@ -329,7 +329,7 @@ class DMSFile(object):
     def createSystem(self, nonbondedMethod='CutoffPeriodic', nonbondedCutoff=1.2,
                      ewaldErrorTolerance=0.0005, removeCMMotion=True, hydrogenMass=None,
                      OPLS=False, implicitSolvent=None, AGBNPVersion=1, REM=False, A=100, C=50, martini=False,
-                     improper_prefactor=0.99, tapering='shift', addForces=[]):
+                     improper_prefactor=0.99, tapering='shift'):
         """Construct an OpenMM System representing the topology described by this
         DMS file. tapering='shift' is must for Martini simulations because
         openMM uses MCBarostat, and for LJ-dominant systems like Martini 
@@ -374,12 +374,9 @@ class DMSFile(object):
 
         # Build the box dimensions
         boxSize = self.topology.getUnitCellDimensions()
-        print('DMS boxSize:', boxSize)
         if boxSize is not None:
-            if boxSize[0]._value * boxSize[1]._value * boxSize[2]._value == 0:
-                print('DMS boxSize is set for a unit cell')
+            if boxSize[0] * boxSize[1] * boxSize[2] == 0:
                 sys.setDefaultPeriodicBoxVectors((1.0, 0, 0), (0, 1.0, 0), (0, 0, 1.0))
-                self.cell = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
             else:
                 sys.setDefaultPeriodicBoxVectors((boxSize[0], 0, 0), (0, boxSize[1], 0), (0, 0, boxSize[2]))
         elif nonbondedMethod in ('CutoffPeriodic', 'Ewald', 'PME', 'LJPME'):
@@ -402,8 +399,6 @@ class DMSFile(object):
         self._addCMAPToSystem(sys)
         self._addVirtualSitesToSystem(sys)
         self._addPositionalHarmonicRestraints(sys)
-        for addForce in addForces:
-            sys.addForce(addForce)
 
         if REM and martini:
             # REM martini simulation
@@ -978,17 +973,14 @@ class DMSFile(object):
                 epsilon2D[i, j] = np.sqrt( epsilon2D[i, i] * epsilon2D[j, j] )
 
         ### NBFIX
-        try:
-            q = """SELECT param1, param2, sigma, epsilon FROM nonbonded_combined_param"""
-            for (fcounter,conn,tables,offset) in self._localVars():
-                for param1, param2, sigma, epsilon in conn.execute(q):
-                    sigma2D[param1, param2]   = sigma
-                    sigma2D[param2, param1]   = sigma
-                    epsilon2D[param1, param2] = epsilon
-                    epsilon2D[param2, param1] = epsilon
+        q = """SELECT param1, param2, sigma, epsilon FROM nonbonded_combined_param"""
+        for (fcounter,conn,tables,offset) in self._localVars():
+            for param1, param2, sigma, epsilon in conn.execute(q):
+                sigma2D[param1, param2]   = sigma
+                sigma2D[param2, param1]   = sigma
+                epsilon2D[param1, param2] = epsilon
+                epsilon2D[param2, param1] = epsilon
 
-        except:
-            pass
 
         sigma2D   *= 0.1
         epsilon2D *= 4.184
