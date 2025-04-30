@@ -13,6 +13,7 @@ cd mstool
 pip install .
 
 dir=$(pip show mstool | grep Location | awk '{print $2}')
+# change 'yourshellconfig' to .bashrc or .zshrc
 echo "mstoolpath=$dir/mstool" >> yourshellconfig
 ```
 
